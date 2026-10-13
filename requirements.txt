@@ -1,1 +1,4 @@
+jieba==0.42.1
+numpy==2.2.6
 pymupdf==1.28.2
+rank-bm25==0.2.2

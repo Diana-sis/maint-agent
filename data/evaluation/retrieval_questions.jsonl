@@ -1,0 +1,10 @@
+{"id":"q001","question":"ATV340出现OCF过电流故障，可能原因和解决措施是什么？","relevant_pages":[568]}
+{"id":"q002","question":"ATV340发生COF CANopen通信中断时应该检查什么？","relevant_pages":[550]}
+{"id":"q003","question":"SCF1电机短路故障可能由什么引起，如何处理？","relevant_pages":[573]}
+{"id":"q004","question":"STF电机堵转错误的触发条件和解决措施是什么？","relevant_pages":[577]}
+{"id":"q005","question":"TH3F AI3热状态错误应该如何排查？","relevant_pages":[580]}
+{"id":"q006","question":"变频器直流总线电压过高，而且减速时间太短，应该怎样处理？","relevant_pages":[568]}
+{"id":"q007","question":"现场总线通信突然中断，需要检查通信地址、接线和终端电阻，应该参考哪项故障？","relevant_pages":[550]}
+{"id":"q008","question":"电机发生机械卡死，输出频率较低但电流超过堵转阈值，应该如何排查？","relevant_pages":[577]}
+{"id":"q009","question":"模拟输入AI3的温度过高，应该检查哪些设置？","relevant_pages":[580]}
+{"id":"q010","question":"变频器到电机的电缆或电机绝缘发生短路时应该如何处理？","relevant_pages":[573]}
