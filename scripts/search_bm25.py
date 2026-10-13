@@ -14,6 +14,9 @@ CHUNKS_PATH = (
     / "chunks.jsonl"
 )
 TOP_K = 5
+ANSWER_SECTION_BOOST = 3.0
+NAVIGATION_DOT_THRESHOLD = 20
+NAVIGATION_PENALTY = 5.0
 
 
 def tokenize(text: str) -> list[str]:
@@ -45,6 +48,17 @@ tokenized_corpus = [
 bm25 = BM25Okapi(tokenized_corpus)
 query_tokens = tokenize(query)
 scores = bm25.get_scores(query_tokens)
+for chunk_index, chunk in enumerate(chunks):
+    has_causes = "可能原因" in chunk["text"]
+    has_solutions = "解决措施" in chunk["text"]
+
+    if has_causes and has_solutions:
+        scores[chunk_index] += ANSWER_SECTION_BOOST
+
+    dot_count = chunk["text"].count(".")
+
+    if dot_count >= NAVIGATION_DOT_THRESHOLD:
+        scores[chunk_index] -= NAVIGATION_PENALTY
 
 top_indices = sorted(
     range(len(scores)),
