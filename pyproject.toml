@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "maint-agent"
+version = "0.1.0"
+description = "A retrieval-augmented maintenance agent for industrial drives."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "jieba==0.42.1",
+    "numpy==2.2.6",
+    "pymupdf==1.28.2",
+    "rank-bm25==0.2.2",
+    "sentence-transformers==6.1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
