@@ -42,3 +42,25 @@ E3 is an annotation correction, not an algorithmic improvement.
 The evaluation set is small and partially derived from inspected manual pages.
 The current 1.000 score must not be treated as final production performance.
 More code-free paraphrases and confusing negative cases are required.
+## Dense and Hybrid Retrieval
+
+### Embedding setup
+
+- Model: `BAAI/bge-small-zh-v1.5`
+- Device: CPU
+- Embedding dimension: 512
+- Corpus size: 811 chunks
+- Corpus encoding time: 52.81 seconds
+
+| Experiment | Recall@1 | Recall@3 | MRR |
+|---|---:|---:|---:|
+| E4: Dense retrieval | 0.800 | 0.900 | 0.875 |
+| E5: Equal-weight RRF | 0.900 | 1.000 | 0.950 |
+| E6: Weighted RRF (BM25 1.2, Dense 1.0) | 1.000 | 1.000 | 1.000 |
+
+Dense retrieval recovered semantic matches but sometimes ranked general safety or
+parameter pages above the specific fault record. Equal-weight RRF improved q010
+but produced a rank tie for q004. Giving BM25 a weight of 1.2 resolved the tie.
+
+The RRF weight was selected on the current development questions and therefore
+requires validation on a separate test set.
