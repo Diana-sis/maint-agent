@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 
 from maintagent.generation import GroundedAnswerGenerator
 from maintagent.retrieval import HybridRetriever
+from maintagent.validation import validate_citations
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -47,4 +48,31 @@ answer = generator.generate(
     results=results,
 )
 
+validation = validate_citations(
+    answer=answer,
+    results=results,
+)
+
+if not validation.is_valid:
+    if not validation.has_citations:
+        reason = "回答中没有检测到页码引用"
+    else:
+        pages = ", ".join(
+            str(page)
+            for page in validation.unsupported_pages
+        )
+        reason = f"存在非检索来源页码：{pages}"
+
+    raise RuntimeError(
+        f"回答引用校验失败，已阻止输出：{reason}。"
+    )
+
 print(answer)
+
+pages = ", ".join(
+    str(page)
+    for page in validation.cited_pages
+)
+
+print()
+print(f"引用校验：通过，回答引用页码：{pages}")
