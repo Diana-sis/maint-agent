@@ -3,9 +3,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from maintagent.agent import MaintenanceAgent
 from maintagent.generation import GroundedAnswerGenerator
 from maintagent.retrieval import HybridRetriever
-from maintagent.validation import validate_citations
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -26,14 +26,22 @@ retriever = HybridRetriever(
     embeddings_path=EMBEDDINGS_PATH,
 )
 
-results = retriever.search(
-    query=query,
+generator = GroundedAnswerGenerator.from_environment()
+
+agent = MaintenanceAgent(
+    retriever=retriever,
+    generator=generator,
     top_k=3,
 )
 
+response = agent.run(query)
+
 print("检索证据：")
 
-for index, result in enumerate(results, start=1):
+for index, result in enumerate(
+    response.evidence,
+    start=1,
+):
     print(
         f"{index}. PDF第{result.page_number}页 | "
         f"RRF={result.rrf_score:.6f}"
@@ -41,37 +49,12 @@ for index, result in enumerate(results, start=1):
 
 print()
 print("生成回答：")
-
-generator = GroundedAnswerGenerator.from_environment()
-answer = generator.generate(
-    query=query,
-    results=results,
-)
-
-validation = validate_citations(
-    answer=answer,
-    results=results,
-)
-
-if not validation.is_valid:
-    if not validation.has_citations:
-        reason = "回答中没有检测到页码引用"
-    else:
-        pages = ", ".join(
-            str(page)
-            for page in validation.unsupported_pages
-        )
-        reason = f"存在非检索来源页码：{pages}"
-
-    raise RuntimeError(
-        f"回答引用校验失败，已阻止输出：{reason}。"
-    )
-
-print(answer)
+print(response.answer)
 
 pages = ", ".join(
     str(page)
-    for page in validation.cited_pages
+    for page
+    in response.citation_validation.cited_pages
 )
 
 print()
