@@ -1,0 +1,12 @@
+{"id":"h001","question":"ATV340报BLF制动控制错误时，可能原因和处理措施是什么？","relevant_pages":[545]}
+{"id":"h002","question":"变频器控制板存储器异常应如何排查？","relevant_pages":[552]}
+{"id":"h003","question":"嵌入式以太网连接中断，应该检查哪些项目？","relevant_pages":[553]}
+{"id":"h004","question":"输入模块温度过高导致停机时应该怎么办？","relevant_pages":[557]}
+{"id":"h005","question":"模拟输入AI1的4-20mA信号丢失后如何处理？","relevant_pages":[565]}
+{"id":"h006","question":"ATV340出现OBF直流母线过压的原因和解决办法是什么？","relevant_pages":[568]}
+{"id":"h007","question":"电机输出缺一相故障应该检查什么？","relevant_pages":[570]}
+{"id":"h008","question":"SLF1 Modbus通信中断应该如何排查？","relevant_pages":[574]}
+{"id":"h009","question":"电机速度过高触发SOF时应该如何处理？","relevant_pages":[576]}
+{"id":"h010","question":"编码器反馈丢失应该检查哪些连接和设置？","relevant_pages":[576]}
+{"id":"h011","question":"电机自整定失败，可能原因和解决措施是什么？","relevant_pages":[582]}
+{"id":"h012","question":"供电电源欠压USF应该如何排查和恢复？","relevant_pages":[583]}

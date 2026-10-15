@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 
 from maintagent.retrieval import HybridRetriever
@@ -8,12 +9,22 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 CHUNKS_PATH = PROJECT_ROOT / "data" / "processed" / "chunks.jsonl"
 EMBEDDINGS_PATH = PROJECT_ROOT / "data" / "processed" / "embeddings.npy"
-QUESTIONS_PATH = (
+DEFAULT_QUESTIONS_PATH = (
     PROJECT_ROOT
     / "data"
     / "evaluation"
     / "retrieval_questions.jsonl"
 )
+
+if len(sys.argv) >= 2:
+    questions_path = Path(sys.argv[1])
+
+    if not questions_path.is_absolute():
+        questions_path = PROJECT_ROOT / questions_path
+
+    QUESTIONS_PATH = questions_path.resolve()
+else:
+    QUESTIONS_PATH = DEFAULT_QUESTIONS_PATH
 
 
 def load_questions(path: Path) -> list[dict]:
@@ -33,6 +44,8 @@ retriever = HybridRetriever(
 )
 
 questions = load_questions(QUESTIONS_PATH)
+print(f"评测文件：{QUESTIONS_PATH}")
+print()
 
 recall_at_1 = 0
 recall_at_3 = 0
