@@ -70,6 +70,20 @@ class ApiTests(unittest.TestCase):
             {"status": "ok"},
         )
 
+    def test_web_interface(self) -> None:
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            response.headers["content-type"].startswith(
+                "text/html"
+            )
+        )
+        self.assertIn(
+            "MaintAgent",
+            response.text,
+        )
+
     def test_ask_endpoint(self) -> None:
         response = self.client.post(
             "/ask",

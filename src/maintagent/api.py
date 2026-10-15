@@ -4,6 +4,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
@@ -11,6 +12,8 @@ from maintagent.agent import MaintenanceAgent
 from maintagent.generation import GroundedAnswerGenerator
 from maintagent.retrieval import HybridRetriever
 
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+WEB_INDEX_PATH = PROJECT_ROOT / "web" / "index.html"
 
 class AskRequest(BaseModel):
     question: str = Field(
@@ -83,6 +86,16 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+@app.get("/", include_in_schema=False)
+def web_interface() -> FileResponse:
+    if not WEB_INDEX_PATH.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Web界面文件不存在。",
+        )
+
+    return FileResponse(WEB_INDEX_PATH)
 
 
 @app.get("/health")

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MaintAgent · 工业设备运维助手</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #172033;
+      background: #f3f6fa;
+      font-family: "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    header {
+      color: white;
+      background: linear-gradient(135deg, #12355b, #087e8b);
+      padding: 32px 24px;
+    }
+
+    header div, main {
+      width: min(1060px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 0;
+      color: #d7edf1;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 20px;
+      padding: 28px 0 48px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #dce3ec;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(25, 50, 80, 0.07);
+      padding: 22px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 19px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 118px;
+      resize: vertical;
+      border: 1px solid #b9c5d4;
+      border-radius: 9px;
+      padding: 14px;
+      font: inherit;
+      line-height: 1.6;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #087e8b;
+      box-shadow: 0 0 0 3px rgba(8, 126, 139, 0.12);
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 18px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    #askButton {
+      margin-top: 12px;
+      color: white;
+      background: #087e8b;
+      font-weight: 600;
+    }
+
+    #askButton:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .example {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      text-align: left;
+      color: #25415f;
+      background: #edf3f8;
+    }
+
+    .status {
+      min-height: 24px;
+      margin: 12px 0;
+      color: #607086;
+      font-size: 14px;
+    }
+
+    .error { color: #b42318; }
+
+    #answer {
+      display: none;
+      margin-top: 18px;
+    }
+
+    #answerText {
+      line-height: 1.75;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    #answerText strong {
+      color: #12355b;
+    }
+
+    .citation {
+      color: #087e8b;
+      font-weight: 600;
+    }
+
+    .evidence {
+      margin-top: 14px;
+      padding: 13px;
+      background: #f7f9fc;
+      border-left: 4px solid #087e8b;
+      border-radius: 6px;
+    }
+
+    .evidence summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .evidence p {
+      max-height: 230px;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.55;
+      color: #435269;
+    }
+
+    .badge {
+      display: inline-block;
+      margin: 3px 5px 3px 0;
+      padding: 4px 9px;
+      color: #075c65;
+      background: #dff3f2;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+
+    .notice {
+      margin-top: 16px;
+      padding: 12px;
+      color: #704b00;
+      background: #fff7df;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 800px) {
+      main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>MaintAgent</h1>
+      <p>面向工业变频器维护场景的可评测 RAG 智能体</p>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="card">
+        <h2>故障咨询</h2>
+        <textarea id="question"
+          placeholder="请输入设备故障现象或故障代码……"></textarea>
+        <button id="askButton">开始分析</button>
+        <div id="status" class="status"></div>
+      </div>
+
+      <div id="answer" class="card">
+        <h2>分析结果</h2>
+        <div id="answerText"></div>
+
+        <h2 style="margin-top: 24px;">检索证据</h2>
+        <div id="citations"></div>
+        <div id="evidenceList"></div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2>示例问题</h2>
+        <button class="example">ATV340出现OCF过电流故障，应该如何处理？</button>
+        <button class="example">编码器反馈丢失应该检查哪些连接和设置？</button>
+        <button class="example">供电电源欠压USF应该如何排查和恢复？</button>
+
+        <div class="notice">
+          本系统仅依据设备手册提供辅助检索与排查建议，不能替代具备资质的现场维护人员。
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    const question = document.querySelector("#question");
+    const askButton = document.querySelector("#askButton");
+    const statusBox = document.querySelector("#status");
+    const answerBox = document.querySelector("#answer");
+    const answerText = document.querySelector("#answerText");
+    const citations = document.querySelector("#citations");
+    const evidenceList = document.querySelector("#evidenceList");
+
+    function escapeHtml(value) {
+      const element = document.createElement("div");
+      element.textContent = value ?? "";
+      return element.innerHTML;
+    }
+
+    function renderAnswer(value) {
+      return escapeHtml(value)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(
+          /\[PDF第(\d+)页\]/g,
+          '<span class="citation">[PDF第$1页]</span>'
+        );
+    }
+
+    document.querySelectorAll(".example").forEach((button) => {
+      button.addEventListener("click", () => {
+        question.value = button.textContent.trim();
+        question.focus();
+      });
+    });
+
+    askButton.addEventListener("click", async () => {
+      const text = question.value.trim();
+
+      if (!text) {
+        statusBox.textContent = "请先输入问题。";
+        statusBox.className = "status error";
+        return;
+      }
+
+      askButton.disabled = true;
+      askButton.textContent = "分析中……";
+      statusBox.textContent = "正在检索手册并生成有引用依据的回答。";
+      statusBox.className = "status";
+      answerBox.style.display = "none";
+
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: text })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "请求失败");
+        }
+
+        answerText.innerHTML = renderAnswer(data.answer);
+
+        citations.innerHTML = (data.cited_pages || [])
+          .map((page) => `<span class="badge">PDF 第 ${page} 页</span>`)
+          .join("");
+
+        evidenceList.innerHTML = (data.evidence || [])
+          .map((item, index) => `
+            <details class="evidence">
+              <summary>证据 ${index + 1} · PDF 第 ${item.page_number} 页</summary>
+              <p>${escapeHtml(item.text)}</p>
+            </details>
+          `)
+          .join("");
+
+        answerBox.style.display = "block";
+        statusBox.textContent = "分析完成。";
+      } catch (error) {
+        statusBox.textContent = `请求失败：${error.message}`;
+        statusBox.className = "status error";
+      } finally {
+        askButton.disabled = false;
+        askButton.textContent = "开始分析";
+      }
+    });
+  </script>
+</body>
+</html>
