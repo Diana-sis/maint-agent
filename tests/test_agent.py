@@ -1,6 +1,10 @@
 import unittest
 
 from maintagent.agent import MaintenanceAgent
+from maintagent.generation import (
+    GenerationResult,
+    TokenUsage,
+)
 from maintagent.retrieval import SearchResult
 
 
@@ -36,8 +40,19 @@ class FakeGenerator:
     def __init__(self, answer: str) -> None:
         self.answer = answer
 
-    def generate(self, query, results) -> str:
-        return self.answer
+    def generate(
+        self,
+        query,
+        results,
+    ) -> GenerationResult:
+        return GenerationResult(
+            answer=self.answer,
+            usage=TokenUsage(
+                prompt_tokens=120,
+                completion_tokens=30,
+                total_tokens=150,
+            ),
+        )
 
 
 class MaintenanceAgentTests(unittest.TestCase):
@@ -65,6 +80,14 @@ class MaintenanceAgentTests(unittest.TestCase):
             response.citation_validation.is_valid
         )
         self.assertEqual(retriever.last_top_k, 2)
+        self.assertEqual(
+            response.usage.total_tokens,
+            150,
+        )
+        self.assertGreaterEqual(
+            response.elapsed_ms,
+            0,
+        )
 
     def test_blocks_unsupported_citation(self) -> None:
         agent = MaintenanceAgent(

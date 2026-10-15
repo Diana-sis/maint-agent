@@ -21,6 +21,10 @@ class AskRequest(BaseModel):
         max_length=500,
     )
 
+class UsageItem(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
 
 class EvidenceItem(BaseModel):
     page_number: int
@@ -33,6 +37,8 @@ class AskResponse(BaseModel):
     answer: str
     cited_pages: list[int]
     evidence: list[EvidenceItem]
+    usage: UsageItem
+    elapsed_ms: float
 
 
 def build_agent() -> MaintenanceAgent:
@@ -142,4 +148,12 @@ async def ask(payload: AskRequest) -> AskResponse:
             response.citation_validation.cited_pages
         ),
         evidence=evidence,
+        usage=UsageItem(
+            prompt_tokens=response.usage.prompt_tokens,
+            completion_tokens=(
+                response.usage.completion_tokens
+            ),
+            total_tokens=response.usage.total_tokens,
+        ),
+        elapsed_ms=round(response.elapsed_ms, 2),
     )

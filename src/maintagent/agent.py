@@ -1,6 +1,10 @@
 from dataclasses import dataclass
+from time import perf_counter
 
-from maintagent.generation import GroundedAnswerGenerator
+from maintagent.generation import (
+    GroundedAnswerGenerator,
+    TokenUsage,
+)
 from maintagent.retrieval import HybridRetriever, SearchResult
 from maintagent.validation import (
     CitationValidation,
@@ -14,7 +18,8 @@ class AgentResponse:
     answer: str
     evidence: tuple[SearchResult, ...]
     citation_validation: CitationValidation
-
+    usage: TokenUsage
+    elapsed_ms: float
 
 class MaintenanceAgent:
     def __init__(
@@ -36,6 +41,8 @@ class MaintenanceAgent:
         if not query:
             raise ValueError("用户问题不能为空。")
 
+        start_time = perf_counter()
+
         evidence = tuple(
             self.retriever.search(
                 query=query,
@@ -43,10 +50,11 @@ class MaintenanceAgent:
             )
         )
 
-        answer = self.generator.generate(
+        generation_result = self.generator.generate(
             query=query,
             results=evidence,
         )
+        answer = generation_result.answer
 
         citation_validation = validate_citations(
             answer=answer,
@@ -68,9 +76,15 @@ class MaintenanceAgent:
                 f"回答引用校验失败，已阻止输出：{reason}。"
             )
 
+        elapsed_ms = (
+            perf_counter() - start_time
+        ) * 1000
+
         return AgentResponse(
             query=query,
             answer=answer,
             evidence=evidence,
             citation_validation=citation_validation,
+            usage=generation_result.usage,
+            elapsed_ms=elapsed_ms,
         )

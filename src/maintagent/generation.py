@@ -1,5 +1,6 @@
 import os
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from openai import OpenAI
 
@@ -29,6 +30,17 @@ SYSTEM_PROMPT = """
 参考来源：
 """.strip()
 
+@dataclass(frozen=True)
+class TokenUsage:
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+
+@dataclass(frozen=True)
+class GenerationResult:
+    answer: str
+    usage: TokenUsage
 
 class GroundedAnswerGenerator:
     def __init__(
@@ -88,14 +100,21 @@ class GroundedAnswerGenerator:
         self,
         query: str,
         results: Sequence[SearchResult],
-    ) -> str:
+    ) -> GenerationResult:
         query = query.strip()
 
         if not query:
             raise ValueError("用户问题不能为空。")
 
         if not results:
-            return "当前手册证据不足，无法确定。"
+                    return GenerationResult(
+            answer="当前手册证据不足，无法确定。",
+            usage=TokenUsage(
+                prompt_tokens=0,
+                completion_tokens=0,
+                total_tokens=0,
+            ),
+        )
 
         context = self.build_context(results)
 
@@ -130,4 +149,19 @@ class GroundedAnswerGenerator:
         if not answer:
             raise RuntimeError("大模型返回了空答案。")
 
-        return answer.strip()
+        usage = response.usage
+
+        return GenerationResult(
+            answer=answer.strip(),
+            usage=TokenUsage(
+                prompt_tokens=int(
+                    getattr(usage, "prompt_tokens", 0) or 0
+                ),
+                completion_tokens=int(
+                    getattr(usage, "completion_tokens", 0) or 0
+                ),
+                total_tokens=int(
+                    getattr(usage, "total_tokens", 0) or 0
+                ),
+            ),
+        )

@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from maintagent.agent import AgentResponse
 from maintagent.api import app
+from maintagent.generation import TokenUsage
 from maintagent.retrieval import SearchResult
 from maintagent.validation import CitationValidation
 
@@ -31,6 +32,12 @@ def make_response() -> AgentResponse:
         answer="检查设备[PDF第568页]。",
         evidence=evidence,
         citation_validation=validation,
+        usage=TokenUsage(
+            prompt_tokens=120,
+            completion_tokens=30,
+            total_tokens=150,
+        ),
+        elapsed_ms=125.5,
     )
 
 
@@ -45,6 +52,8 @@ class FakeAgent:
             citation_validation=(
                 response.citation_validation
             ),
+            usage=response.usage,
+            elapsed_ms=response.elapsed_ms,
         )
 
 
@@ -107,6 +116,14 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(
             body["evidence"][0]["page_number"],
             568,
+        )
+        self.assertEqual(
+            body["usage"]["total_tokens"],
+            150,
+        )
+        self.assertEqual(
+            body["elapsed_ms"],
+            125.5,
         )
 
     def test_rejects_empty_question(self) -> None:

@@ -131,6 +131,21 @@
       font-weight: 600;
     }
 
+    .metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      padding: 7px 11px;
+      color: #435269;
+      background: #edf3f8;
+      border-radius: 7px;
+      font-size: 13px;
+    }
+
     .evidence {
       margin-top: 14px;
       padding: 13px;
@@ -197,6 +212,7 @@
 
       <div id="answer" class="card">
         <h2>分析结果</h2>
+        <div id="metrics" class="metrics"></div>
         <div id="answerText"></div>
 
         <h2 style="margin-top: 24px;">检索证据</h2>
@@ -225,6 +241,7 @@
     const statusBox = document.querySelector("#status");
     const answerBox = document.querySelector("#answer");
     const answerText = document.querySelector("#answerText");
+    const metrics = document.querySelector("#metrics");
     const citations = document.querySelector("#citations");
     const evidenceList = document.querySelector("#evidenceList");
 
@@ -279,6 +296,12 @@
         }
 
         answerText.innerHTML = renderAnswer(data.answer);
+        metrics.innerHTML = `
+          <span class="metric">耗时 ${data.elapsed_ms} ms</span>
+          <span class="metric">输入 ${data.usage.prompt_tokens} Token</span>
+          <span class="metric">输出 ${data.usage.completion_tokens} Token</span>
+          <span class="metric">总计 ${data.usage.total_tokens} Token</span>
+        `;
 
         citations.innerHTML = (data.cited_pages || [])
           .map((page) => `<span class="badge">PDF 第 ${page} 页</span>`)
