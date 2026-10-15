@@ -6,6 +6,16 @@ MaintAgent 从设备编程手册中检索故障证据，调用大模型生成排
 
 > 本项目用于技术研究和辅助检索，不能替代设备制造商文档或具备资质的现场维护人员。
 
+## Web 演示
+
+系统提供可直接操作的 Web 界面，支持示例问题填充、故障问答、引用页码展示和检索证据展开。
+
+![MaintAgent Web 问答界面](docs/images/web-demo.png)
+
+每次请求同时展示端到端耗时及大模型 Token 用量，便于分析响应效率和调用成本。
+
+![MaintAgent 耗时与 Token 统计](docs/images/web-metrics.png)
+
 ## 核心能力
 
 - 使用 PyMuPDF 提取 PDF 页面文本
@@ -16,6 +26,8 @@ MaintAgent 从设备编程手册中检索故障证据，调用大模型生成排
 - 自动校验回答引用的 PDF 页码是否来自检索证据
 - 引用不合法时阻止答案输出
 - 提供命令行问答和 FastAPI HTTP 接口
+- 提供可交互的 Web 故障问答界面
+- 统计端到端请求耗时和大模型 Token 用量
 - 提供开发集、独立测试集和自动化测试
 
 ## 系统流程
@@ -202,6 +214,7 @@ python -m uvicorn maintagent.api:app `
 
 启动后访问：
 
+- Web 问答界面：`http://127.0.0.1:8000/`
 - Swagger UI：`http://127.0.0.1:8000/docs`
 - 健康检查：`http://127.0.0.1:8000/health`
 - 问答接口：`POST http://127.0.0.1:8000/ask`
